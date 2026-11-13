@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-inference-service
+  namespace: default
+  labels:
+    app: mlops-inference-service
+    app.kubernetes.io/name: mlops-inference-service
+    app.kubernetes.io/version: "v1.4.2"
+    app.kubernetes.io/component: inference-api
+    app.kubernetes.io/part-of: production-mlops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mlops-inference-service
+  template:
+    metadata:
+      labels:
+        app: mlops-inference-service
+        app.kubernetes.io/name: mlops-inference-service
+        app.kubernetes.io/version: "v1.4.2"
+    spec:
+      containers:
+        - name: inference-api
+          image: mlops-inference-service:v1.4.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: mlops-inference-config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3

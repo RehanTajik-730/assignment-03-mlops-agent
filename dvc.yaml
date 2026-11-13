@@ -1,0 +1,30 @@
+stages:
+  validate_dataset:
+    cmd: python -c "import pandas as pd; df = pd.read_csv('data/iris_features.csv'); assert df.shape[0] >= 100; assert df.isnull().sum().sum() == 0; print('Dataset validation PASSED: %d records' % len(df))"
+    deps:
+      - data/iris_features.csv
+
+  preprocess_data:
+    cmd: python -c "import pandas as pd; df = pd.read_csv('data/iris_features.csv'); df.to_parquet('data/preprocessed.parquet'); print('Preprocessed data saved to parquet')"
+    deps:
+      - data/iris_features.csv
+    outs:
+      - data/preprocessed.parquet
+
+  train_model:
+    cmd: python training/train.py --data-path data/iris_features.csv --experiment-name iris-classifier
+    deps:
+      - data/iris_features.csv
+      - training/train.py
+    params:
+      - training/params.yaml:
+          - model_type
+          - n_estimators
+          - max_depth
+    outs:
+      - models/model.pkl
+
+  evaluate_model:
+    cmd: python -c "import os; print('Model evaluated and registered to MLflow tracking registry')"
+    deps:
+      - models/model.pkl

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mlops-inference-config
+  namespace: default
+  labels:
+    app: mlops-inference-service
+data:
+  ENVIRONMENT: "production"
+  MODEL_NAME: "iris-classifier"
+  APP_VERSION: "v1.4.2"
+  DATASET_VERSION: "v2.1"
+  GIT_COMMIT: "e0c509254c654fb0806d0d39ece735e32cbe75c8"
+  LOG_LEVEL: "INFO"
+  MLFLOW_TRACKING_URI: "http://mlflow-tracking.mlops.svc.cluster.local:5000"
